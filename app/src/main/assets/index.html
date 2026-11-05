@@ -2,7 +2,6 @@
 <html lang="uk"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#202124">
-<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
 <title>Погода</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#202124;color:#e8eaed;font-family:system-ui,Roboto,sans-serif;padding:env(safe-area-inset-top) 16px 24px}
@@ -11,16 +10,22 @@ h1{font-weight:400;font-size:32px;margin:20px 0 12px}
 .top{padding:18px 20px 0;display:flex;justify-content:space-between;align-items:flex-start}
 .now{font-size:64px;line-height:1.1}.now span{font-size:46px}
 .right{text-align:right;font-size:18px}.right small{display:block;color:#bdc1c6;margin-top:10px;font-size:15px}
-.hours{display:flex;overflow-x:auto;gap:0;padding:14px 8px 0}
-.h{flex:0 0 14.28%;min-width:56px;text-align:center;font-size:14px}.h .i{font-size:26px;margin:10px 0 6px}
-.h .p{color:#8ab4f8;font-size:12px;min-height:14px}
+.strip{display:flex;overflow-x:auto;scrollbar-width:none}.strip::-webkit-scrollbar{display:none}
+.c{flex:0 0 64px;text-align:center;font-size:14px}
+.hours{padding:14px 0 0}.c .i{font-size:26px;margin:10px 0 6px}
+.c .p{color:#8ab4f8;font-size:12px;min-height:14px}
 svg.scene{display:block;width:100%;height:auto;margin-top:8px}
-.days{display:flex;gap:8px;overflow-x:auto;margin:14px 0}
+.days{display:flex;gap:8px;overflow-x:auto;margin:14px 0;scrollbar-width:none}
 .d{flex:0 0 22%;min-width:84px;background:#2a2d35;border-radius:16px;padding:10px 4px;text-align:center;font-size:14px;border:2px solid transparent}
 .d.sel{border-color:#e8eaed}.d .i{font-size:26px;margin:6px 0}
 .row{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid #3c4043;font-size:18px}
-.row b{font-weight:500;flex:1}.row span{color:#bdc1c6}
+.row b{font-weight:500}.row span{color:#bdc1c6;flex:1}.row i{font-style:normal;color:#bdc1c6;font-size:20px;padding-right:6px}
 .ico{width:48px;height:48px;border-radius:12px;background:#2f323a;display:grid;place-items:center;font-size:22px}
+.det{padding:4px 0 16px}.sum{font-size:16px;margin:6px 0 16px}
+.v{font-size:15px;height:22px}.t{color:#bdc1c6;font-size:14px;margin-top:6px}
+.bar{height:12px;border:2px solid #8ab4f8;border-radius:8px;margin:14px 6px 6px;overflow:hidden;background:transparent}
+.bar u{display:block;height:100%;background:#8ab4f8;opacity:.5}
+.pc{color:#8ab4f8;font-size:15px}
 .err{color:#f28b82;padding:12px}.upd{color:#9aa0a6;font-size:12px;margin-top:10px}
 </style></head><body>
 <h1>Погода</h1>
@@ -28,7 +33,7 @@ svg.scene{display:block;width:100%;height:auto;margin-top:8px}
 <div class="card">
  <div class="top"><div><div>Зараз</div><div class="now" id="t">–</div></div>
  <div class="right"><div id="c"></div><small id="f"></small></div></div>
- <div class="hours" id="hours"></div>
+ <div class="hours strip" id="hours"></div>
  <svg class="scene" viewBox="0 0 400 90" preserveAspectRatio="xMidYMax slice">
   <rect width="400" height="90" fill="#0d1b3d"/>
   <path d="M0 50Q60 25 130 48T270 40T400 50V90H0Z" fill="#14306a"/>
@@ -40,35 +45,46 @@ svg.scene{display:block;width:100%;height:auto;margin-top:8px}
  </svg>
 </div>
 <div class="days" id="days"></div>
-<div class="row"><div class="ico">🌧</div><b>Опади</b><span id="pr"></span></div>
-<div class="row"><div class="ico">💨</div><b>Вітер</b><span id="w"></span></div>
-<div class="row"><div class="ico">💧</div><b>Вологість</b><span id="hu"></span></div>
+<div id="secs"></div>
 <div class="upd" id="upd"></div><div class="err" id="err"></div>
 <script>
 const DEF={lat:49.42,lon:26.99,name:"Хмельницький"};
 const ic=(c,day=1)=>c==0?(day?"☀️":"🌙"):c<=2?(day?"🌤️":"☁️"):c==3?"☁️":c<=48?"🌫️":c<=57?"🌦️":c<=67?"🌧️":c<=77?"🌨️":c<=82?"🌧️":c<=86?"🌨️":"⛈️";
 const tx=c=>c==0?"Ясно":c<=2?"Мінлива хмарність":c==3?"Хмарно":c<=48?"Туман":c<=57?"Мряка":c<=67?"Дощ":c<=77?"Сніг":c<=82?"Злива":c<=86?"Снігопад":"Гроза";
+const wt=v=>v<6?"штиль":v<20?"легкий":v<39?"помірний":v<62?"сильний":"штормовий";
+const fm=p=>p<=0?"0":p<0.25?"<0,25":p.toFixed(1).replace(".",",");
 const $=id=>document.getElementById(id),r=Math.round,dn=["нд","пн","вт","ср","чт","пт","сб"];
-let D;
+let D,sel=0,open={pr:1,w:1,hu:1};
 async function load(lat,lon,name){
  $("loc").textContent=name||"";
- const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,weather_code,precipitation_probability,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=auto&forecast_days=7`;
+ const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,weather_code,precipitation_probability,precipitation,is_day,wind_speed_10m,wind_direction_10m,relative_humidity_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=7`;
  try{D=await (await fetch(u)).json();localStorage.setItem("w",JSON.stringify(D));}catch(e){const s=localStorage.getItem("w");if(s)D=JSON.parse(s);else{$("err").textContent="Немає даних. Перевір інтернет.";return}}
  draw(0);
 }
+function tog(k){open[k]=!open[k];draw(sel)}
 function draw(i){
- const c=D.current,h=D.hourly,d=D.daily;
- $("t").innerHTML=r(c.temperature_2m)+"° "+ic(c.weather_code,c.is_day).replace(/^/,'<span>')+"</span>";
+ sel=i;const c=D.current,h=D.hourly,d=D.daily;
+ $("t").innerHTML=r(c.temperature_2m)+"° <span>"+ic(c.weather_code,c.is_day)+"</span>";
  $("c").textContent=tx(c.weather_code);$("f").textContent="Відчувається як "+r(c.apparent_temperature)+"°";
- const now=c.time.slice(0,13);let s=h.time.findIndex(t=>t.slice(0,13)>=now);if(s<0)s=0;
- $("hours").innerHTML=h.time.slice(s,s+24).map((t,k)=>{const j=s+k;return `<div class="h"><div>${r(h.temperature_2m[j])}°</div><div class="i">${ic(h.weather_code[j],h.is_day[j])}</div><div class="p">${h.precipitation_probability[j]>0?h.precipitation_probability[j]+"%":""}</div><div>${k?t.slice(11,16):"Зараз"}</div></div>`}).join("");
+ let H=[];const now=c.time.slice(0,13);
+ h.time.forEach((t,j)=>{if(t.slice(0,10)==d.time[i]&&(i>0||t.slice(0,13)>=now))H.push(j)});
+ const lab=(n,j)=>(i==0&&n==0)?"Зараз":h.time[j].slice(11,16);
+ $("hours").innerHTML=H.map((j,n)=>`<div class="c"><div>${r(h.temperature_2m[j])}°</div><div class="i">${ic(h.weather_code[j],h.is_day[j])}</div><div class="p">${h.precipitation_probability[j]>0?h.precipitation_probability[j]+"%":""}</div><div>${lab(n,j)}</div></div>`).join("");
  $("days").innerHTML=d.time.map((t,k)=>`<div class="d ${k==i?"sel":""}" onclick="draw(${k})">${dn[new Date(t).getDay()]}<div class="i">${ic(d.weather_code[k])}</div>${r(d.temperature_2m_max[k])}°/${r(d.temperature_2m_min[k])}°</div>`).join("");
- $("pr").textContent=d.precipitation_probability_max[i]+"%";
- $("w").textContent=r(i?d.wind_speed_10m_max[i]:c.wind_speed_10m)+" км/год";
- $("hu").textContent=c.relative_humidity_2m+"%";
+ const when=i==0?"сьогодні":"цього дня";
+ const dayIdx=h.time.map((t,j)=>t.slice(0,10)==d.time[i]?j:-1).filter(j=>j>=0);
+ const avgH=r(dayIdx.reduce((a,j)=>a+h.relative_humidity_2m[j],0)/dayIdx.length);
+ const wnow=i?d.wind_speed_10m_max[i]:c.wind_speed_10m,hnow=i?avgH:c.relative_humidity_2m;
+ const sec=(k,ico,name,val,body)=>`<div class="row" onclick="tog('${k}')"><div class="ico">${ico}</div><b>${name}</b><span>· ${val}</span><i>${open[k]?"⌃":"⌄"}</i></div>${open[k]?`<div class="det">${body}</div>`:""}`;
+ const pr=`<div class="sum">Кількість опадів ${when} <b>${fm(d.precipitation_sum[i])} мм</b></div><div class="strip">${H.map((j,n)=>`<div class="c"><div class="v">${fm(h.precipitation[j])}</div><div class="bar"><u style="width:${h.precipitation_probability[j]}%"></u></div><div class="pc">${h.precipitation_probability[j]}%</div><div class="t">${lab(n,j)}</div></div>`).join("")}</div>`;
+ const wmax=r(d.wind_speed_10m_max[i]);
+ const w=`<div class="sum">Найвищий показник ${when} <b>${wmax} км/год, ${wt(wmax)}</b></div><div class="strip">${H.map((j,n)=>`<div class="c"><div class="v">${r(h.wind_speed_10m[j])}</div><svg width="26" height="26" viewBox="0 0 24 24" style="transform:rotate(${(h.wind_direction_10m[j]+180)%360}deg);margin:10px 0"><path d="M12 2L19 21L12 16L5 21Z" fill="#8ab4f8"/></svg><div class="t">${lab(n,j)}</div></div>`).join("")}</div>`;
+ const hv=H.map(j=>h.relative_humidity_2m[j]),mn=Math.min(...hv),mx=Math.max(...hv),W=H.length*64;
+ const Y=v=>46+(mx-v)/((mx-mn)||1)*34,P=hv.map((v,n)=>[32+64*n,Y(v)]);
+ const line="M"+P.map(p=>p.join(",")).join("L");
+ const hu=`<div class="sum">У середньому ${when} <b>${avgH}%</b></div><div class="strip"><div style="width:${W}px"><svg width="${W}" height="100"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ab4f8" stop-opacity=".35"/><stop offset="1" stop-color="#8ab4f8" stop-opacity="0"/></linearGradient></defs><path d="${line}L${P[P.length-1][0]},100L${P[0][0]},100Z" fill="url(#g)"/><path d="${line}" fill="none" stroke="#8ab4f8" stroke-width="2.5"/>${P.map((p,n)=>`<text x="${p[0]}" y="${p[1]-12}" fill="#e8eaed" font-size="15" text-anchor="middle">${hv[n]}%</text>`).join("")}</svg><div style="display:flex">${H.map((j,n)=>`<div class="c t">${lab(n,j)}</div>`).join("")}</div></div></div>`;
+ $("secs").innerHTML=sec("pr","🌧","Опади",d.precipitation_probability_max[i]+"%",pr)+sec("w","💨","Вітер",r(wnow)+" км/год",w)+sec("hu","💧","Вологість",hnow+"%",hu);
  $("upd").textContent="Оновлено: "+c.time.replace("T"," ")+" · дані Open-Meteo";
 }
-if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
 if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>load(p.coords.latitude,p.coords.longitude,"Ваше місцезнаходження"),()=>load(DEF.lat,DEF.lon,DEF.name),{timeout:6000});else load(DEF.lat,DEF.lon,DEF.name);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)location.reload()});
 </script></body></html>
