@@ -1,22 +1,21 @@
 <!doctype html>
 <html lang="uk"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#202124">
 <title>Погода</title>
 <style>
-:root{--bg:#202124;--card:#282b33;--chip:#2a2d35;--ico:#2f323a;--tx:#e8eaed;--mu:#bdc1c6;--mu2:#9aa0a6;--bd:#3c4043;--ac:#8ab4f8;--s1:#0d1b3d;--s2:#14306a;--s3:#1b3f86;--s4:#2f5ec4;--s5:#244aa0;color-scheme:dark}
-:root[data-theme=light]{--bg:#f1f3f4;--card:#fff;--chip:#fff;--ico:#e8eaed;--tx:#202124;--mu:#5f6368;--mu2:#80868b;--bd:#dadce0;--ac:#1a73e8;--s1:#bfe3f7;--s2:#8fcf9a;--s3:#6fbf80;--s4:#f4a259;--s5:#e08a3c;color-scheme:light}
-.s1{fill:var(--s1)}.s2{fill:var(--s2)}.s3{fill:var(--s3)}.s4{fill:var(--s4)}.s5{fill:var(--s5)}
+:root{--bg:#202124;--card:#282b33;--chip:#2a2d35;--ico:#2f323a;--tx:#e8eaed;--mu:#bdc1c6;--mu2:#9aa0a6;--bd:#3c4043;--ac:#8ab4f8;color-scheme:dark}
+:root[data-theme=light]{--bg:#f1f3f4;--card:#fff;--chip:#fff;--ico:#e8eaed;--tx:#202124;--mu:#5f6368;--mu2:#80868b;--bd:#dadce0;--ac:#1a73e8;color-scheme:light}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,Roboto,sans-serif;padding:env(safe-area-inset-top) 16px 24px}
-h1{font-weight:400;font-size:32px;margin:20px 0 12px}
+.hd{display:flex;justify-content:space-between;align-items:center;margin:20px 0 12px}
+h1{font-weight:400;font-size:32px;margin:0}
+#lb{background:var(--chip);color:var(--tx);border:1px solid var(--bd);border-radius:20px;padding:8px 14px;font-size:15px;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card{background:var(--card);border-radius:22px;overflow:hidden}
-.top{padding:18px 20px 0;display:flex;justify-content:space-between;align-items:flex-start}
-.now{font-size:64px;line-height:1.1}.now span{font-size:46px}
+.top{padding:18px 20px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.now{font-size:64px;line-height:1.1}.now.sm{font-size:46px}.now span{font-size:.72em}
 .right{text-align:right;font-size:18px}.right small{display:block;color:var(--mu);margin-top:10px;font-size:15px}
 .strip{display:flex;overflow-x:auto;scrollbar-width:none}.strip::-webkit-scrollbar{display:none}
 .c{flex:0 0 64px;text-align:center;font-size:14px}
-.hours{padding:14px 0 0}.c .i{font-size:26px;margin:10px 0 6px}
-.c .p{color:var(--ac);font-size:12px;min-height:14px}
+.hours{padding:14px 0 0}.c .i{font-size:26px;margin:10px 0 6px}.c .p{color:var(--ac);font-size:12px;min-height:14px}
 svg.scene{display:block;width:100%;height:auto;margin-top:8px}
 .days{display:flex;gap:8px;overflow-x:auto;margin:14px 0;scrollbar-width:none}
 .d{flex:0 0 22%;min-width:84px;background:var(--chip);border-radius:16px;padding:10px 4px;text-align:center;font-size:14px;border:2px solid transparent}
@@ -26,56 +25,120 @@ svg.scene{display:block;width:100%;height:auto;margin-top:8px}
 .ico{width:48px;height:48px;border-radius:12px;background:var(--ico);display:grid;place-items:center;font-size:22px}
 .det{padding:4px 0 16px}.sum{font-size:16px;margin:6px 0 16px}
 .v{font-size:15px;height:22px}.t{color:var(--mu);font-size:14px;margin-top:6px}
-.bar{height:12px;border:2px solid var(--ac);border-radius:8px;margin:14px 6px 6px;overflow:hidden;background:transparent}
-.bar u{display:block;height:100%;background:var(--ac);opacity:.5}
-.pc{color:var(--ac);font-size:15px}
+.bar{height:12px;border:2px solid var(--ac);border-radius:8px;margin:14px 6px 6px;overflow:hidden}
+.bar u{display:block;height:100%;background:var(--ac);opacity:.5}.pc{color:var(--ac);font-size:15px}
 .err{color:#f28b82;padding:12px}.upd{color:var(--mu2);font-size:12px;margin-top:10px}
+#ov{position:fixed;inset:0;background:var(--bg);padding:calc(env(safe-area-inset-top) + 16px) 16px;overflow:auto;z-index:9}
+#ov input{width:100%;padding:14px 16px;font-size:17px;border-radius:14px;border:1px solid var(--bd);background:var(--chip);color:var(--tx);outline:none}
+.it{padding:16px 6px;border-bottom:1px solid var(--bd);font-size:17px}.it small{display:block;color:var(--mu);margin-top:3px;font-size:14px}
+.cx{float:right;background:none;border:0;color:var(--mu);font-size:26px;margin:-4px 0 8px}
+@keyframes fall{from{transform:translate(0,-14px)}to{transform:translate(-16px,140px)}}
+@keyframes snow{from{transform:translate(0,-8px)}50%{transform:translate(9px,65px)}to{transform:translate(-5px,140px)}}
+@keyframes drift{from{transform:translateX(-26px)}to{transform:translateX(26px)}}
+@keyframes bob{50%{transform:translateY(-1.6px)}}
+@keyframes bl{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+@keyframes fl{0%,90%,100%{opacity:0}92%,96%{opacity:.75}94%{opacity:.1}}
+.dr{animation:fall .75s linear infinite}.fl{animation:snow 5s linear infinite}
+.cl{animation:drift 14s ease-in-out infinite alternate}.bob{animation:bob 2.6s ease-in-out infinite}
+.bl{transform-box:fill-box;transform-origin:center;animation:bl 4.5s infinite}.fx{opacity:0;animation:fl 5s infinite}
 </style></head><body>
-<h1>Погода</h1>
-<div id="loc" style="color:var(--mu);margin:-6px 0 10px"></div>
+<div class="hd"><h1>Погода</h1><button id="lb" onclick="openLoc()">📍 <span id="loc">…</span> ▾</button></div>
 <div class="card">
- <div class="top"><div><div>Зараз</div><div class="now" id="t">–</div></div>
+ <div class="top"><div><div id="hl">Зараз</div><div class="now" id="t">–</div></div>
  <div class="right"><div id="c"></div><small id="f"></small></div></div>
  <div class="hours strip" id="hours"></div>
- <svg class="scene" viewBox="0 0 400 90" preserveAspectRatio="xMidYMax slice">
-  <rect class="s1" width="400" height="90"/>
-  <path class="s2" d="M0 50Q60 25 130 48T270 40T400 50V90H0Z"/>
-  <path class="s3" d="M0 70Q80 55 160 68T400 62V90H0Z"/>
-  <path class="s4" d="M150 78L190 30L230 78Z"/><path class="s5" d="M190 30L230 78H200Z"/>
-  <circle cx="190" cy="62" r="13" fill="#4caf50"/><circle cx="184" cy="55" r="5" fill="#fff"/><circle cx="196" cy="55" r="5" fill="#fff"/>
-  <circle cx="185" cy="55" r="2" fill="#111"/><circle cx="197" cy="55" r="2" fill="#111"/>
-  <rect x="240" y="66" width="8" height="12" rx="2" fill="#ffb74d"/><circle cx="244" cy="64" r="14" fill="#ffb74d" opacity=".15"/>
- </svg>
+ <svg id="scene" class="scene" viewBox="0 0 400 130" preserveAspectRatio="xMidYMax slice"></svg>
 </div>
 <div class="days" id="days"></div>
 <div id="secs"></div>
 <div class="upd" id="upd"></div><div class="err" id="err"></div>
+<div id="ov" hidden><button class="cx" onclick="closeLoc()">✕</button><input id="q" placeholder="Знайти місто…" oninput="sq(this.value)" autocomplete="off"><div id="res"></div></div>
 <script>
-const q=new URLSearchParams(location.search).get("theme");
-function setT(){document.documentElement.dataset.theme=q||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark")}
-setT();if(!q)matchMedia("(prefers-color-scheme: light)").addEventListener("change",setT);
+const q0=new URLSearchParams(location.search).get("theme");
+function setT(){document.documentElement.dataset.theme=q0||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark")}
+setT();if(!q0)matchMedia("(prefers-color-scheme: light)").addEventListener("change",setT);
 const DEF={lat:49.42,lon:26.99,name:"Хмельницький"};
 const ic=(c,day=1)=>c==0?(day?"☀️":"🌙"):c<=2?(day?"🌤️":"☁️"):c==3?"☁️":c<=48?"🌫️":c<=57?"🌦️":c<=67?"🌧️":c<=77?"🌨️":c<=82?"🌧️":c<=86?"🌨️":"⛈️";
 const tx=c=>c==0?"Ясно":c<=2?"Мінлива хмарність":c==3?"Хмарно":c<=48?"Туман":c<=57?"Мряка":c<=67?"Дощ":c<=77?"Сніг":c<=82?"Злива":c<=86?"Снігопад":"Гроза";
 const wt=v=>v<6?"штиль":v<20?"легкий":v<39?"помірний":v<62?"сильний":"штормовий";
 const fm=p=>p<=0?"0":p<0.25?"<0,25":p.toFixed(1).replace(".",",");
-const $=id=>document.getElementById(id),r=Math.round,dn=["нд","пн","вт","ср","чт","пт","сб"];
-let D,sel=0,open={pr:1,w:1,hu:1};
+const $=id=>document.getElementById(id),r=Math.round,R=(a,b)=>a+Math.random()*(b-a);
+let D,sel=0,open={pr:1,w:1,hu:1},lastKey="",RES=[];
+
+/* ---------- Жабка ---------- */
+function frog(a){return `<g class="bob">
+<ellipse cy="1" rx="30" ry="4" fill="#000" opacity=".15"/>
+<g stroke="#2e7d32" stroke-width="1.6" stroke-linejoin="round">
+<ellipse cx="-16" cy="-3" rx="13" ry="6" fill="#55b84f"/><ellipse cx="16" cy="-3" rx="13" ry="6" fill="#55b84f"/>
+<ellipse cy="-21" rx="25" ry="20" fill="#66cc5e"/></g>
+<ellipse cy="-15" rx="16" ry="12" fill="#d8f5b4"/>
+<g stroke="#2e7d32" stroke-width="1.6">
+<ellipse cx="-26" cy="-17" rx="5" ry="9" transform="rotate(18 -26 -17)" fill="#66cc5e"/><ellipse cx="26" cy="-17" rx="5" ry="9" transform="rotate(-18 26 -17)" fill="#66cc5e"/>
+<ellipse cy="-38" rx="28" ry="17" fill="#66cc5e"/>
+<circle cx="-15" cy="-51" r="10.5" fill="#66cc5e"/><circle cx="15" cy="-51" r="10.5" fill="#66cc5e"/></g>
+${a.hat?`<path d="M-12 -61Q0 -82 12 -61Z" fill="#e5484d" stroke="#b02f34"/><rect x="-13.5" y="-63" width="27" height="5.5" rx="2.7" fill="#fff"/><circle cy="-80" r="4" fill="#fff"/>`:""}
+<g class="bl"><circle cx="-15" cy="-52" r="7.6" fill="#fff"/><circle cx="15" cy="-52" r="7.6" fill="#fff"/><circle cx="-14" cy="-51" r="4.2" fill="#1d2b1d"/><circle cx="16" cy="-51" r="4.2" fill="#1d2b1d"/><circle cx="-12.8" cy="-52.8" r="1.5" fill="#fff"/><circle cx="17.2" cy="-52.8" r="1.5" fill="#fff"/></g>
+${a.shades?`<g fill="#111"><circle cx="-15" cy="-52" r="8.8"/><circle cx="15" cy="-52" r="8.8"/><rect x="-8" y="-54" width="16" height="2.6"/></g>`:""}
+<ellipse cx="-19" cy="-34" rx="5.5" ry="3.2" fill="#ff8fa3" opacity=".65"/><ellipse cx="19" cy="-34" rx="5.5" ry="3.2" fill="#ff8fa3" opacity=".65"/>
+<path d="M-11 -38Q0 -25 11 -38" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linecap="round"/>
+<circle cx="-3" cy="-43" r="1" fill="#2e7d32"/><circle cx="3" cy="-43" r="1" fill="#2e7d32"/>
+${a.scarf?`<path d="M-24 -26Q0 -16 24 -26L25 -19Q0 -9 -25 -19Z" fill="#e5484d"/><path d="M12 -17L22 -15L19 1L10 -1Z" fill="#c93a3f"/>`:""}
+${a.cup?`<g transform="translate(-37 -21)"><rect width="11" height="12" rx="2.5" fill="#fff" stroke="#c9ced3"/><path d="M11 3q5 0 5 4t-5 3" fill="none" stroke="#c9ced3" stroke-width="2"/></g>`:""}
+</g>`}
+
+/* ---------- Сцена за погодою ---------- */
+function scene(code,day,temp){
+ const k=code>=95?"storm":code>=85?"snow":code>=80?"rain":code>=71?"snow":code>=51?"rain":code>=45?"fog":code==3?"cloud":code>=1?"part":"clear";
+ const K=k=="part"?"clear":k;
+ const S={clear:["#6bb8ee","#d2ecff","#0b1536","#1f3a78"],cloud:["#93a8b8","#d3dce4","#1b2438","#2e3c58"],fog:["#b4c0c9","#e2e8ec","#29313f","#3e4b5e"],rain:["#76899c","#a9b6c2","#141b2b","#27344c"],snow:["#a6b5c3","#e6ecf1","#222b3d","#3a475f"],storm:["#4b596a","#7a8896","#0d111f","#1c2437"]}[K];
+ const [t,b]=day?[S[0],S[1]]:[S[2],S[3]];
+ let o=`<defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${t}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="400" height="130" fill="url(#sk)"/>`;
+ if(!day&&K=="clear")for(let n=0;n<24;n++)o+=`<circle cx="${R(5,395)}" cy="${R(4,70)}" r="${R(.6,1.4)}" fill="#fff" opacity="${R(.4,.9)}"/>`;
+ if(K=="clear")o+=day?`<circle cx="335" cy="36" r="28" fill="#ffe27a" opacity=".3"/><circle cx="335" cy="36" r="17" fill="#ffd23f"/>`:`<circle cx="335" cy="34" r="16" fill="#f4f1d0"/><circle cx="342" cy="29" r="14" fill="${t}"/>`;
+ const cc=day?(K=="clear"?"#fff":K=="rain"||K=="storm"?"#aab6c2":"#eef2f5"):(K=="clear"?"#3b4d78":"#46546e");
+ const nc=K=="clear"?(k=="part"?2:0):5;
+ for(let n=0;n<nc;n++)o+=`<g class="cl" style="animation-duration:${R(10,20)}s"><g transform="translate(${R(30,370)} ${R(16,58)}) scale(${R(.8,1.5)})" fill="${cc}" opacity=".95"><ellipse rx="28" ry="10"/><circle cx="-9" cy="-8" r="11"/><circle cx="8" cy="-11" r="13"/></g></g>`;
+ if(K=="fog")for(let n=0;n<3;n++)o+=`<g class="cl" style="animation-duration:${R(9,16)}s"><ellipse cx="${R(80,320)}" cy="${40+n*28}" rx="170" ry="11" fill="#fff" opacity=".3"/></g>`;
+ const sn=K=="snow";
+ const hc=sn?(day?["#e4ecf2","#f6f9fb"]:["#53627f","#6b7b99"]):day?(K=="clear"?["#86c98f","#5fae6e"]:["#7ba585","#5f8f6d"]):["#16336f","#102a5c"];
+ o+=`<path d="M0 98Q70 72 150 94T300 86T400 96V130H0Z" fill="${hc[0]}"/><path d="M0 114Q100 100 200 112T400 108V130H0Z" fill="${hc[1]}"/>`;
+ if(K=="rain"||K=="storm")o+=`<ellipse cx="200" cy="123" rx="46" ry="4" fill="#9db7d1" opacity=".5"/>`;
+ o+=`<g transform="translate(200 122) scale(1.1)">`;
+ const tent=!day&&(K=="clear"||K=="cloud"||K=="fog");
+ if(tent)o+=`<path d="M-62 0L0 -78L62 0Z" fill="#2f5ec4" stroke="#1e3f8c" stroke-width="2"/><path d="M0 -78L62 0H20Z" fill="#244aa0"/><path d="M-20 0L0 -48L20 0Z" fill="#0a1228"/><rect x="74" y="-14" width="9" height="14" rx="2" fill="#ffb74d"/><circle cx="78.5" cy="-8" r="20" fill="#ffb74d" opacity=".2"/>`;
+ if(K=="rain"||K=="storm")o+=`<path d="M-48 -68Q0 -116 48 -68Q35 -74 24 -68Q12 -74 0 -68Q-12 -74 -24 -68Q-35 -74 -48 -68Z" fill="#ff6b6b" stroke="#c94545" stroke-width="1.5"/><path d="M0 -92V-52" stroke="#6b4a2b" stroke-width="2.5"/>`;
+ o+=frog({scarf:temp<=3||sn,hat:temp<=0||sn,shades:day&&K=="clear"&&temp>=10,cup:day&&(K=="cloud"||K=="fog")})+`</g>`;
+ if(K=="rain"||K=="storm"){const n=(K=="storm"||code==65||code>=81)?44:28;for(let i=0;i<n;i++){const x=R(0,420);o+=`<line class="dr" x1="${x}" y1="0" x2="${x-2}" y2="9" stroke="#cfe3f5" stroke-width="1.3" opacity=".7" style="animation-duration:${R(.55,.85)}s;animation-delay:-${R(0,1)}s"/>`}}
+ if(sn)for(let i=0;i<36;i++)o+=`<circle class="fl" cx="${R(0,400)}" cy="0" r="${R(1.3,3)}" fill="#fff" opacity=".9" style="animation-duration:${R(4,7)}s;animation-delay:-${R(0,6)}s"/>`;
+ if(K=="storm")o+=`<rect class="fx" width="400" height="130" fill="#fff"/><polygon class="fx" points="70,0 55,40 70,40 58,80 92,30 76,30 88,0" fill="#fff7b0"/>`;
+ return o}
+
+/* ---------- Дані ---------- */
 async function load(lat,lon,name){
  $("loc").textContent=name||"";
  const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,weather_code,precipitation_probability,precipitation,is_day,wind_speed_10m,wind_direction_10m,relative_humidity_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=7`;
- try{D=await (await fetch(u)).json();localStorage.setItem("w",JSON.stringify(D));}catch(e){const s=localStorage.getItem("w");if(s)D=JSON.parse(s);else{$("err").textContent="Немає даних. Перевір інтернет.";return}}
- draw(0);
+ $("err").textContent="";
+ try{D=await (await fetch(u)).json();if(!D.current)throw 0;try{localStorage.setItem("w",JSON.stringify(D))}catch(e){}}
+ catch(e){let s=null;try{s=localStorage.getItem("w")}catch(e){}if(s)D=JSON.parse(s);else{$("err").textContent="Немає даних. Перевір інтернет.";return}}
+ lastKey="";draw(0);
 }
 function tog(k){open[k]=!open[k];draw(sel)}
 function draw(i){
  sel=i;const c=D.current,h=D.hourly,d=D.daily;
- $("t").innerHTML=r(c.temperature_2m)+"° <span>"+ic(c.weather_code,c.is_day)+"</span>";
- $("c").textContent=tx(c.weather_code);$("f").textContent="Відчувається як "+r(c.apparent_temperature)+"°";
+ const cap=s=>s[0].toUpperCase()+s.slice(1);
+ $("hl").textContent=i==0?"Зараз":cap(new Date(d.time[i]+"T12:00").toLocaleDateString("uk-UA",{weekday:"long",day:"numeric",month:"long"}));
+ $("t").className="now"+(i?" sm":"");
+ $("t").innerHTML=(i==0?r(c.temperature_2m)+"°":r(d.temperature_2m_max[i])+"°/"+r(d.temperature_2m_min[i])+"°")+" <span>"+(i==0?ic(c.weather_code,c.is_day):ic(d.weather_code[i]))+"</span>";
+ $("c").textContent=tx(i==0?c.weather_code:d.weather_code[i]);
+ $("f").textContent=i==0?"Відчувається як "+r(c.apparent_temperature)+"°":"";
+ const sc=i==0?c.weather_code:d.weather_code[i],sd=i==0?c.is_day:1,st=i==0?c.temperature_2m:d.temperature_2m_max[i];
+ const key=[sc,sd,st<=0,st<=3,st>=10].join();
+ if(key!=lastKey){$("scene").innerHTML=scene(sc,sd,st);lastKey=key}
  let H=[];const now=c.time.slice(0,13);
  h.time.forEach((t,j)=>{if(t.slice(0,10)==d.time[i]&&(i>0||t.slice(0,13)>=now))H.push(j)});
  const lab=(n,j)=>(i==0&&n==0)?"Зараз":h.time[j].slice(11,16);
  $("hours").innerHTML=H.map((j,n)=>`<div class="c"><div>${r(h.temperature_2m[j])}°</div><div class="i">${ic(h.weather_code[j],h.is_day[j])}</div><div class="p">${h.precipitation_probability[j]>0?h.precipitation_probability[j]+"%":""}</div><div>${lab(n,j)}</div></div>`).join("");
+ const dn=["нд","пн","вт","ср","чт","пт","сб"];
  $("days").innerHTML=d.time.map((t,k)=>`<div class="d ${k==i?"sel":""}" onclick="draw(${k})">${dn[new Date(t).getDay()]}<div class="i">${ic(d.weather_code[k])}</div>${r(d.temperature_2m_max[k])}°/${r(d.temperature_2m_min[k])}°</div>`).join("");
  const when=i==0?"сьогодні":"цього дня";
  const dayIdx=h.time.map((t,j)=>t.slice(0,10)==d.time[i]?j:-1).filter(j=>j>=0);
@@ -92,5 +155,19 @@ function draw(i){
  $("secs").innerHTML=sec("pr","🌧","Опади",d.precipitation_probability_max[i]+"%",pr)+sec("w","💨","Вітер",r(wnow)+" км/год",w)+sec("hu","💧","Вологість",hnow+"%",hu);
  $("upd").textContent="Оновлено: "+c.time.replace("T"," ")+" · дані Open-Meteo";
 }
-if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>load(p.coords.latitude,p.coords.longitude,"Ваше місцезнаходження"),()=>load(DEF.lat,DEF.lon,DEF.name),{timeout:6000});else load(DEF.lat,DEF.lon,DEF.name);
+
+/* ---------- Вибір місця ---------- */
+function openLoc(){$("ov").hidden=false;$("q").value="";RES=[];showRes();$("q").focus()}
+function closeLoc(){$("ov").hidden=true}
+function showRes(){$("res").innerHTML=`<div class="it" onclick="useGeo()">📍 Моє місцезнаходження</div>`+RES.map((p,n)=>`<div class="it" onclick="pick(${n})">${p.name}<small>${[p.admin1,p.country].filter(Boolean).join(", ")}</small></div>`).join("")}
+let tmr;
+function sq(v){clearTimeout(tmr);if(v.trim().length<2)return;tmr=setTimeout(async()=>{try{const j=await(await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(v.trim())}&count=8&language=uk`)).json();RES=j.results||[];showRes()}catch(e){}},350)}
+function pick(n){const p=RES[n];try{localStorage.setItem("loc",JSON.stringify({lat:p.latitude,lon:p.longitude,name:p.name}))}catch(e){}closeLoc();load(p.latitude,p.longitude,p.name)}
+function useGeo(){try{localStorage.removeItem("loc")}catch(e){}closeLoc();start()}
+function start(){
+ let s=null;try{s=JSON.parse(localStorage.getItem("loc"))}catch(e){}
+ if(s)return load(s.lat,s.lon,s.name);
+ if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>load(p.coords.latitude,p.coords.longitude,"Моє місцезнаходження"),()=>load(DEF.lat,DEF.lon,DEF.name),{timeout:6000});else load(DEF.lat,DEF.lon,DEF.name);
+}
+start();
 </script></body></html>
