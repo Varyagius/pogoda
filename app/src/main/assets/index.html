@@ -4,41 +4,44 @@
 <meta name="theme-color" content="#202124">
 <title>Погода</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#202124;color:#e8eaed;font-family:system-ui,Roboto,sans-serif;padding:env(safe-area-inset-top) 16px 24px}
+:root{--bg:#202124;--card:#282b33;--chip:#2a2d35;--ico:#2f323a;--tx:#e8eaed;--mu:#bdc1c6;--mu2:#9aa0a6;--bd:#3c4043;--ac:#8ab4f8;--s1:#0d1b3d;--s2:#14306a;--s3:#1b3f86;--s4:#2f5ec4;--s5:#244aa0;color-scheme:dark}
+:root[data-theme=light]{--bg:#f1f3f4;--card:#fff;--chip:#fff;--ico:#e8eaed;--tx:#202124;--mu:#5f6368;--mu2:#80868b;--bd:#dadce0;--ac:#1a73e8;--s1:#bfe3f7;--s2:#8fcf9a;--s3:#6fbf80;--s4:#f4a259;--s5:#e08a3c;color-scheme:light}
+.s1{fill:var(--s1)}.s2{fill:var(--s2)}.s3{fill:var(--s3)}.s4{fill:var(--s4)}.s5{fill:var(--s5)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,Roboto,sans-serif;padding:env(safe-area-inset-top) 16px 24px}
 h1{font-weight:400;font-size:32px;margin:20px 0 12px}
-.card{background:#282b33;border-radius:22px;overflow:hidden}
+.card{background:var(--card);border-radius:22px;overflow:hidden}
 .top{padding:18px 20px 0;display:flex;justify-content:space-between;align-items:flex-start}
 .now{font-size:64px;line-height:1.1}.now span{font-size:46px}
-.right{text-align:right;font-size:18px}.right small{display:block;color:#bdc1c6;margin-top:10px;font-size:15px}
+.right{text-align:right;font-size:18px}.right small{display:block;color:var(--mu);margin-top:10px;font-size:15px}
 .strip{display:flex;overflow-x:auto;scrollbar-width:none}.strip::-webkit-scrollbar{display:none}
 .c{flex:0 0 64px;text-align:center;font-size:14px}
 .hours{padding:14px 0 0}.c .i{font-size:26px;margin:10px 0 6px}
-.c .p{color:#8ab4f8;font-size:12px;min-height:14px}
+.c .p{color:var(--ac);font-size:12px;min-height:14px}
 svg.scene{display:block;width:100%;height:auto;margin-top:8px}
 .days{display:flex;gap:8px;overflow-x:auto;margin:14px 0;scrollbar-width:none}
-.d{flex:0 0 22%;min-width:84px;background:#2a2d35;border-radius:16px;padding:10px 4px;text-align:center;font-size:14px;border:2px solid transparent}
-.d.sel{border-color:#e8eaed}.d .i{font-size:26px;margin:6px 0}
-.row{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid #3c4043;font-size:18px}
-.row b{font-weight:500}.row span{color:#bdc1c6;flex:1}.row i{font-style:normal;color:#bdc1c6;font-size:20px;padding-right:6px}
-.ico{width:48px;height:48px;border-radius:12px;background:#2f323a;display:grid;place-items:center;font-size:22px}
+.d{flex:0 0 22%;min-width:84px;background:var(--chip);border-radius:16px;padding:10px 4px;text-align:center;font-size:14px;border:2px solid transparent}
+.d.sel{border-color:var(--tx)}.d .i{font-size:26px;margin:6px 0}
+.row{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--bd);font-size:18px}
+.row b{font-weight:500}.row span{color:var(--mu);flex:1}.row i{font-style:normal;color:var(--mu);font-size:20px;padding-right:6px}
+.ico{width:48px;height:48px;border-radius:12px;background:var(--ico);display:grid;place-items:center;font-size:22px}
 .det{padding:4px 0 16px}.sum{font-size:16px;margin:6px 0 16px}
-.v{font-size:15px;height:22px}.t{color:#bdc1c6;font-size:14px;margin-top:6px}
-.bar{height:12px;border:2px solid #8ab4f8;border-radius:8px;margin:14px 6px 6px;overflow:hidden;background:transparent}
-.bar u{display:block;height:100%;background:#8ab4f8;opacity:.5}
-.pc{color:#8ab4f8;font-size:15px}
-.err{color:#f28b82;padding:12px}.upd{color:#9aa0a6;font-size:12px;margin-top:10px}
+.v{font-size:15px;height:22px}.t{color:var(--mu);font-size:14px;margin-top:6px}
+.bar{height:12px;border:2px solid var(--ac);border-radius:8px;margin:14px 6px 6px;overflow:hidden;background:transparent}
+.bar u{display:block;height:100%;background:var(--ac);opacity:.5}
+.pc{color:var(--ac);font-size:15px}
+.err{color:#f28b82;padding:12px}.upd{color:var(--mu2);font-size:12px;margin-top:10px}
 </style></head><body>
 <h1>Погода</h1>
-<div id="loc" style="color:#bdc1c6;margin:-6px 0 10px"></div>
+<div id="loc" style="color:var(--mu);margin:-6px 0 10px"></div>
 <div class="card">
  <div class="top"><div><div>Зараз</div><div class="now" id="t">–</div></div>
  <div class="right"><div id="c"></div><small id="f"></small></div></div>
  <div class="hours strip" id="hours"></div>
  <svg class="scene" viewBox="0 0 400 90" preserveAspectRatio="xMidYMax slice">
-  <rect width="400" height="90" fill="#0d1b3d"/>
-  <path d="M0 50Q60 25 130 48T270 40T400 50V90H0Z" fill="#14306a"/>
-  <path d="M0 70Q80 55 160 68T400 62V90H0Z" fill="#1b3f86"/>
-  <path d="M150 78L190 30L230 78Z" fill="#2f5ec4"/><path d="M190 30L230 78H200Z" fill="#244aa0"/>
+  <rect class="s1" width="400" height="90"/>
+  <path class="s2" d="M0 50Q60 25 130 48T270 40T400 50V90H0Z"/>
+  <path class="s3" d="M0 70Q80 55 160 68T400 62V90H0Z"/>
+  <path class="s4" d="M150 78L190 30L230 78Z"/><path class="s5" d="M190 30L230 78H200Z"/>
   <circle cx="190" cy="62" r="13" fill="#4caf50"/><circle cx="184" cy="55" r="5" fill="#fff"/><circle cx="196" cy="55" r="5" fill="#fff"/>
   <circle cx="185" cy="55" r="2" fill="#111"/><circle cx="197" cy="55" r="2" fill="#111"/>
   <rect x="240" y="66" width="8" height="12" rx="2" fill="#ffb74d"/><circle cx="244" cy="64" r="14" fill="#ffb74d" opacity=".15"/>
@@ -48,6 +51,9 @@ svg.scene{display:block;width:100%;height:auto;margin-top:8px}
 <div id="secs"></div>
 <div class="upd" id="upd"></div><div class="err" id="err"></div>
 <script>
+const q=new URLSearchParams(location.search).get("theme");
+function setT(){document.documentElement.dataset.theme=q||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark")}
+setT();if(!q)matchMedia("(prefers-color-scheme: light)").addEventListener("change",setT);
 const DEF={lat:49.42,lon:26.99,name:"Хмельницький"};
 const ic=(c,day=1)=>c==0?(day?"☀️":"🌙"):c<=2?(day?"🌤️":"☁️"):c==3?"☁️":c<=48?"🌫️":c<=57?"🌦️":c<=67?"🌧️":c<=77?"🌨️":c<=82?"🌧️":c<=86?"🌨️":"⛈️";
 const tx=c=>c==0?"Ясно":c<=2?"Мінлива хмарність":c==3?"Хмарно":c<=48?"Туман":c<=57?"Мряка":c<=67?"Дощ":c<=77?"Сніг":c<=82?"Злива":c<=86?"Снігопад":"Гроза";
@@ -78,11 +84,11 @@ function draw(i){
  const sec=(k,ico,name,val,body)=>`<div class="row" onclick="tog('${k}')"><div class="ico">${ico}</div><b>${name}</b><span>· ${val}</span><i>${open[k]?"⌃":"⌄"}</i></div>${open[k]?`<div class="det">${body}</div>`:""}`;
  const pr=`<div class="sum">Кількість опадів ${when} <b>${fm(d.precipitation_sum[i])} мм</b></div><div class="strip">${H.map((j,n)=>`<div class="c"><div class="v">${fm(h.precipitation[j])}</div><div class="bar"><u style="width:${h.precipitation_probability[j]}%"></u></div><div class="pc">${h.precipitation_probability[j]}%</div><div class="t">${lab(n,j)}</div></div>`).join("")}</div>`;
  const wmax=r(d.wind_speed_10m_max[i]);
- const w=`<div class="sum">Найвищий показник ${when} <b>${wmax} км/год, ${wt(wmax)}</b></div><div class="strip">${H.map((j,n)=>`<div class="c"><div class="v">${r(h.wind_speed_10m[j])}</div><svg width="26" height="26" viewBox="0 0 24 24" style="transform:rotate(${(h.wind_direction_10m[j]+180)%360}deg);margin:10px 0"><path d="M12 2L19 21L12 16L5 21Z" fill="#8ab4f8"/></svg><div class="t">${lab(n,j)}</div></div>`).join("")}</div>`;
+ const w=`<div class="sum">Найвищий показник ${when} <b>${wmax} км/год, ${wt(wmax)}</b></div><div class="strip">${H.map((j,n)=>`<div class="c"><div class="v">${r(h.wind_speed_10m[j])}</div><svg width="26" height="26" viewBox="0 0 24 24" style="transform:rotate(${(h.wind_direction_10m[j]+180)%360}deg);margin:10px 0"><path d="M12 2L19 21L12 16L5 21Z" style="fill:var(--ac)"/></svg><div class="t">${lab(n,j)}</div></div>`).join("")}</div>`;
  const hv=H.map(j=>h.relative_humidity_2m[j]),mn=Math.min(...hv),mx=Math.max(...hv),W=H.length*64;
  const Y=v=>46+(mx-v)/((mx-mn)||1)*34,P=hv.map((v,n)=>[32+64*n,Y(v)]);
  const line="M"+P.map(p=>p.join(",")).join("L");
- const hu=`<div class="sum">У середньому ${when} <b>${avgH}%</b></div><div class="strip"><div style="width:${W}px"><svg width="${W}" height="100"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ab4f8" stop-opacity=".35"/><stop offset="1" stop-color="#8ab4f8" stop-opacity="0"/></linearGradient></defs><path d="${line}L${P[P.length-1][0]},100L${P[0][0]},100Z" fill="url(#g)"/><path d="${line}" fill="none" stroke="#8ab4f8" stroke-width="2.5"/>${P.map((p,n)=>`<text x="${p[0]}" y="${p[1]-12}" fill="#e8eaed" font-size="15" text-anchor="middle">${hv[n]}%</text>`).join("")}</svg><div style="display:flex">${H.map((j,n)=>`<div class="c t">${lab(n,j)}</div>`).join("")}</div></div></div>`;
+ const hu=`<div class="sum">У середньому ${when} <b>${avgH}%</b></div><div class="strip"><div style="width:${W}px"><svg width="${W}" height="100"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--ac)" stop-opacity=".35"/><stop offset="1" style="stop-color:var(--ac)" stop-opacity="0"/></linearGradient></defs><path d="${line}L${P[P.length-1][0]},100L${P[0][0]},100Z" fill="url(#g)"/><path d="${line}" fill="none" style="stroke:var(--ac)" stroke-width="2.5"/>${P.map((p,n)=>`<text x="${p[0]}" y="${p[1]-12}" style="fill:var(--tx)" font-size="15" text-anchor="middle">${hv[n]}%</text>`).join("")}</svg><div style="display:flex">${H.map((j,n)=>`<div class="c t">${lab(n,j)}</div>`).join("")}</div></div></div>`;
  $("secs").innerHTML=sec("pr","🌧","Опади",d.precipitation_probability_max[i]+"%",pr)+sec("w","💨","Вітер",r(wnow)+" км/год",w)+sec("hu","💧","Вологість",hnow+"%",hu);
  $("upd").textContent="Оновлено: "+c.time.replace("T"," ")+" · дані Open-Meteo";
 }
