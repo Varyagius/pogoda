@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#202124">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<title>Погода</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#202124;color:#e8eaed;font-family:system-ui,Roboto,sans-serif;padding:env(safe-area-inset-top) 16px 24px}
+h1{font-weight:400;font-size:32px;margin:20px 0 12px}
+.card{background:#282b33;border-radius:22px;overflow:hidden}
+.top{padding:18px 20px 0;display:flex;justify-content:space-between;align-items:flex-start}
+.now{font-size:64px;line-height:1.1}.now span{font-size:46px}
+.right{text-align:right;font-size:18px}.right small{display:block;color:#bdc1c6;margin-top:10px;font-size:15px}
+.hours{display:flex;overflow-x:auto;gap:0;padding:14px 8px 0}
+.h{flex:0 0 14.28%;min-width:56px;text-align:center;font-size:14px}.h .i{font-size:26px;margin:10px 0 6px}
+.h .p{color:#8ab4f8;font-size:12px;min-height:14px}
+svg.scene{display:block;width:100%;height:auto;margin-top:8px}
+.days{display:flex;gap:8px;overflow-x:auto;margin:14px 0}
+.d{flex:0 0 22%;min-width:84px;background:#2a2d35;border-radius:16px;padding:10px 4px;text-align:center;font-size:14px;border:2px solid transparent}
+.d.sel{border-color:#e8eaed}.d .i{font-size:26px;margin:6px 0}
+.row{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid #3c4043;font-size:18px}
+.row b{font-weight:500;flex:1}.row span{color:#bdc1c6}
+.ico{width:48px;height:48px;border-radius:12px;background:#2f323a;display:grid;place-items:center;font-size:22px}
+.err{color:#f28b82;padding:12px}.upd{color:#9aa0a6;font-size:12px;margin-top:10px}
+</style></head><body>
+<h1>Погода</h1>
+<div id="loc" style="color:#bdc1c6;margin:-6px 0 10px"></div>
+<div class="card">
+ <div class="top"><div><div>Зараз</div><div class="now" id="t">–</div></div>
+ <div class="right"><div id="c"></div><small id="f"></small></div></div>
+ <div class="hours" id="hours"></div>
+ <svg class="scene" viewBox="0 0 400 90" preserveAspectRatio="xMidYMax slice">
+  <rect width="400" height="90" fill="#0d1b3d"/>
+  <path d="M0 50Q60 25 130 48T270 40T400 50V90H0Z" fill="#14306a"/>
+  <path d="M0 70Q80 55 160 68T400 62V90H0Z" fill="#1b3f86"/>
+  <path d="M150 78L190 30L230 78Z" fill="#2f5ec4"/><path d="M190 30L230 78H200Z" fill="#244aa0"/>
+  <circle cx="190" cy="62" r="13" fill="#4caf50"/><circle cx="184" cy="55" r="5" fill="#fff"/><circle cx="196" cy="55" r="5" fill="#fff"/>
+  <circle cx="185" cy="55" r="2" fill="#111"/><circle cx="197" cy="55" r="2" fill="#111"/>
+  <rect x="240" y="66" width="8" height="12" rx="2" fill="#ffb74d"/><circle cx="244" cy="64" r="14" fill="#ffb74d" opacity=".15"/>
+ </svg>
+</div>
+<div class="days" id="days"></div>
+<div class="row"><div class="ico">🌧</div><b>Опади</b><span id="pr"></span></div>
+<div class="row"><div class="ico">💨</div><b>Вітер</b><span id="w"></span></div>
+<div class="row"><div class="ico">💧</div><b>Вологість</b><span id="hu"></span></div>
+<div class="upd" id="upd"></div><div class="err" id="err"></div>
+<script>
+const DEF={lat:49.42,lon:26.99,name:"Хмельницький"};
+const ic=(c,day=1)=>c==0?(day?"☀️":"🌙"):c<=2?(day?"🌤️":"☁️"):c==3?"☁️":c<=48?"🌫️":c<=57?"🌦️":c<=67?"🌧️":c<=77?"🌨️":c<=82?"🌧️":c<=86?"🌨️":"⛈️";
+const tx=c=>c==0?"Ясно":c<=2?"Мінлива хмарність":c==3?"Хмарно":c<=48?"Туман":c<=57?"Мряка":c<=67?"Дощ":c<=77?"Сніг":c<=82?"Злива":c<=86?"Снігопад":"Гроза";
+const $=id=>document.getElementById(id),r=Math.round,dn=["нд","пн","вт","ср","чт","пт","сб"];
+let D;
+async function load(lat,lon,name){
+ $("loc").textContent=name||"";
+ const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,is_day,wind_speed_10m&hourly=temperature_2m,weather_code,precipitation_probability,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=auto&forecast_days=7`;
+ try{D=await (await fetch(u)).json();localStorage.setItem("w",JSON.stringify(D));}catch(e){const s=localStorage.getItem("w");if(s)D=JSON.parse(s);else{$("err").textContent="Немає даних. Перевір інтернет.";return}}
+ draw(0);
+}
+function draw(i){
+ const c=D.current,h=D.hourly,d=D.daily;
+ $("t").innerHTML=r(c.temperature_2m)+"° "+ic(c.weather_code,c.is_day).replace(/^/,'<span>')+"</span>";
+ $("c").textContent=tx(c.weather_code);$("f").textContent="Відчувається як "+r(c.apparent_temperature)+"°";
+ const now=c.time.slice(0,13);let s=h.time.findIndex(t=>t.slice(0,13)>=now);if(s<0)s=0;
+ $("hours").innerHTML=h.time.slice(s,s+24).map((t,k)=>{const j=s+k;return `<div class="h"><div>${r(h.temperature_2m[j])}°</div><div class="i">${ic(h.weather_code[j],h.is_day[j])}</div><div class="p">${h.precipitation_probability[j]>0?h.precipitation_probability[j]+"%":""}</div><div>${k?t.slice(11,16):"Зараз"}</div></div>`}).join("");
+ $("days").innerHTML=d.time.map((t,k)=>`<div class="d ${k==i?"sel":""}" onclick="draw(${k})">${dn[new Date(t).getDay()]}<div class="i">${ic(d.weather_code[k])}</div>${r(d.temperature_2m_max[k])}°/${r(d.temperature_2m_min[k])}°</div>`).join("");
+ $("pr").textContent=d.precipitation_probability_max[i]+"%";
+ $("w").textContent=r(i?d.wind_speed_10m_max[i]:c.wind_speed_10m)+" км/год";
+ $("hu").textContent=c.relative_humidity_2m+"%";
+ $("upd").textContent="Оновлено: "+c.time.replace("T"," ")+" · дані Open-Meteo";
+}
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
+if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>load(p.coords.latitude,p.coords.longitude,"Ваше місцезнаходження"),()=>load(DEF.lat,DEF.lon,DEF.name),{timeout:6000});else load(DEF.lat,DEF.lon,DEF.name);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)location.reload()});
+</script></body></html>
